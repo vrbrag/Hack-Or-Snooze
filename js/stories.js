@@ -1,0 +1,125 @@
+"use strict";
+
+// This is the global list of the stories, an instance of StoryList
+let storyList;
+
+/** Get and show stories when site first loads. */
+
+async function getAndShowStoriesOnStart() {
+  storyList = await StoryList.getStories();
+  $storiesLoadingMsg.remove();
+
+  putStoriesOnPage();
+}
+
+/**
+ * A render method to render HTML for an individual Story instance
+ * - story: an instance of Story
+ *
+ * Returns the markup for the story.
+ */
+
+function generateStoryMarkup(story) {
+  // console.debug("generateStoryMarkup", story);
+
+  const hostName = story.getHostName();
+  return $(`
+      <li id="${story.storyId}">
+        <a href="${story.url}" target="a_blank" class="story-link">
+          ${story.title}
+        </a>
+        <small class="story-hostname">(${hostName})</small>
+        <small class="story-author">by ${story.author}</small>
+        <small class="story-user">posted by ${story.username}</small>
+      </li>
+    `);
+}
+
+/** Gets list of stories from server, generates their HTML, and puts on page. */
+
+function putStoriesOnPage() {
+  console.debug("putStoriesOnPage");
+
+  $allStoriesList.empty();
+
+  // loop through all of our stories and generate HTML for them
+  for (let story of storyList.stories) {
+    const $story = generateStoryMarkup(story);
+    $allStoriesList.append($story);
+  }
+
+  $allStoriesList.show();
+}
+
+/** Submitting new story form **************/
+$submitForm.on('submit', submitStory)
+
+async function submitStory(evt) {
+  evt.preventDefault()
+
+  const username = currentUser.username
+  const author = $('#create-author').val()
+  const title = $('#create-title').val()
+  const url = $('#create-url').val()
+
+  const storyData = { username, title, author, url }
+
+  const story = await storyList.addStory(currentUser, storyData)
+
+  const $story = generateStoryMarkup(story);
+  $allStoriesList.prepend($story);
+
+  $submitForm.trigger('reset')
+}
+
+/** Save user stories to $ownStories */
+function putUserStoriesOnPage() {
+  console.debug('putUserStoriesOnPage')
+  $ownStories.empty()
+
+  if (currentUser.ownStories.length === 0) {
+    $ownStories.append('<h5>No user stories added!</h5>')
+  }
+  else {
+    for (let story of currentUser.ownStories) {
+      let $story = generateStoryMarkup(story)
+      $ownStories.append($story)
+    }
+  }
+  $ownStories.show()
+}
+
+/**Favorites ****************/
+
+
+$storiesList.on('click', '.star', handleFavoriteStories)
+function handleFavoriteStories(evt) {
+  const $evt = $(evt.target)
+
+  const $clostestLi = $evt.closest('li') // get closest listed <li> to click
+  const storyId = $clostestLi.attr('id') // get storyId
+
+
+  //if favorited already -> removeFavorite via handleFavoriteStories
+
+  // else -> addFavorite via handleFavoriteStories
+}
+
+function putFavoritesOnPage() {
+  console.debug("putFavoritesOnPage")
+  $favoriteStoriesList.empty()
+
+  // loop thru favorites to make $story into HTML using generateStoryMarkup() - adds <li>
+  if (currentUser.favorites.length === 0) {
+    $favoriteStoriesList.append('<h5>No favorites added!</h5>')
+  }
+  else {
+    for (let story of currentUser.favorites) {
+      const $story = generateStoryMarkup(story)
+      $favoriteStoriesList.append($story)
+    }
+  }
+  /** Change favorite-stories from hidden to showing */
+  $favoriteStoriesList.show()
+}
+
