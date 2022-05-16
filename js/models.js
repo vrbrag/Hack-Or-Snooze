@@ -90,6 +90,20 @@ class StoryList {
     return story
   }
 
+  async removeStory(user, storyId) {
+    const token = user.loginToken
+    await axios({
+      url: `${BASE_URL}/stories/${storyId}`,
+      method: "DELETE",
+      data: { token: token }
+    })
+
+    // filter out story with storyId we want to remove from favorites, ownStories, and stories
+    this.stories = this.stories.filter(story => story.storyId !== storyId)
+    user.ownStories = user.ownStories.filter(story => story.storyId !== storyId)
+    user.favorites = user.favorites.filter(story => story.storyId !== storyId)
+  }
+
 }
 /******************************************************************************
  * User: a user in the system (only used to represent the current user)
@@ -210,7 +224,6 @@ class User {
   /** Add Favorite Story*/
   async addFavoriteStory(story) {
     this.favorites.push(story)
-    debugger
     await this.addOrRemoveFavorite("add", story)
   }
   /** Delete Favorite Story */

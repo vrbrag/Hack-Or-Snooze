@@ -19,13 +19,12 @@ async function getAndShowStoriesOnStart() {
  * Returns the markup for the story.
  */
 
-function generateStoryMarkup(story) {
-  // console.debug("generateStoryMarkup", story);
-
+function generateStoryMarkup(story, showDeleteBtn = false) {
   const hostName = story.getHostName();
   const showStar = Boolean(currentUser)
   return $(`
       <li id="${story.storyId}">
+        ${showDeleteBtn ? deleteBtnHTML() : ""}
         ${showStar ? favoriteHTML(story, currentUser) : ""}
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
@@ -35,6 +34,24 @@ function generateStoryMarkup(story) {
         <small class="story-user">posted by ${story.username}</small>
       </li>
     `);
+}
+
+/**Delete story button */
+function deleteBtnHTML() {
+  return `
+    <span class="trash-can">
+      <i class="fas fa-trash-alt">
+      </i>
+    </span>`;
+}
+/**Favorites button */
+function favoriteHTML(story, user) {
+  const isFavorite = user.isFavorite(story);
+  const starType = isFavorite ? "fas" : "far";
+  return `
+      <span class="star">
+        <i class="${starType} fa-star"></i>
+      </span>`;
 }
 
 /** Gets list of stories from server, generates their HTML, and puts on page. */
@@ -52,6 +69,23 @@ function putStoriesOnPage() {
 
   $allStoriesList.show();
 }
+
+/**Remove stories from page */
+$ownStories.on('click', ".trash-can", deleteStory)
+
+async function deleteStory(evt) {
+  console.debug("deleteStory", evt)
+
+  const $evt = $(evt.target)
+  const $clostestLi = $evt.closest('li') // get closest listed <li> to click
+  const storyId = $clostestLi.attr('id') // get storyId
+
+  // remove story instance from storyList 
+  await storyList.removeStory(currentUser, storyId)
+
+  await putUserStoriesOnPage()
+}
+
 
 /** Submitting new story form **************/
 $submitForm.on('submit', submitStory)
@@ -84,7 +118,7 @@ function putUserStoriesOnPage() {
   }
   else {
     for (let story of currentUser.ownStories) {
-      let $story = generateStoryMarkup(story)
+      let $story = generateStoryMarkup(story, true)
       $ownStories.append($story)
     }
   }
@@ -92,17 +126,6 @@ function putUserStoriesOnPage() {
 }
 
 /**Favorites ****************/
-function favoriteHTML(story, user) {
-  const isFavorite = user.isFavorite(story);
-  const starType = isFavorite ? "fas" : "far";
-  return `
-      <span class="star">
-        <i class="${starType} fa-star"></i>
-      </span>`;
-}
-
-
-
 async function handleFavoriteStories(evt) {
   const $evt = $(evt.target)
 

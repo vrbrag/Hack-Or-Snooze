@@ -37,3 +37,13 @@
 .story-user {
   display: block;
 }
+
+.star, .trash-can{
+  font-size: 1 rem;
+  margin: 0 2px;
+  cursor: pointer;
+}
+
+.trash-can :hover{
+  color: brown;
+}
