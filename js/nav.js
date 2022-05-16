@@ -59,7 +59,7 @@ function navMyStoriesClick(evt) {
 $navFavorites.on('click', navFavoritesClick)
 
 function navFavoritesClick(evt) {
-  console.debug('navFavoritesClick')
+  console.debug('navFavoritesClick', evt)
   hidePageComponents()
   putFavoritesOnPage()
   $favoriteStoriesList.show()

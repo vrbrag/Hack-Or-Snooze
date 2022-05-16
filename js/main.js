@@ -7,7 +7,7 @@ const $body = $("body");
 const $storiesLoadingMsg = $("#stories-loading-msg");
 const $allStoriesList = $("#all-stories-list");
 const $ownStories = $("#my-stories")
-const $favoriteStoriesList = $("favorited-stories")
+const $favoriteStoriesList = $("#favorited-stories")
 const $storiesList = $(".stories-list") // all three stories list
 const $submitForm = $("#submit-form")
 

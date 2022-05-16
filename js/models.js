@@ -210,6 +210,7 @@ class User {
   /** Add Favorite Story*/
   async addFavoriteStory(story) {
     this.favorites.push(story)
+    debugger
     await this.addOrRemoveFavorite("add", story)
   }
   /** Delete Favorite Story */
@@ -220,15 +221,18 @@ class User {
   }
 
   async addOrRemoveFavorite(status, story) {
-    let storyId = story.storyId
+    // debugger
+    // let storyId = story.storyId
     const method = status === "add" ? "POST" : "DELETE"
     const token = this.loginToken
     await axios({
-      url: `${BASE_URL}/users/${username}/favorites/${storyId}`,
+      url: `${BASE_URL}/users/${this.username}/favorites/${story.storyId}`,
       method: method,
       data: { token }
     })
   }
-
-
+  // True or False, is the given instance a user favorite?
+  isFavorite(story) {
+    return this.favorites.some(arr => (arr.storyId === story.storyId))
+  }
 }

@@ -23,8 +23,10 @@ function generateStoryMarkup(story) {
   // console.debug("generateStoryMarkup", story);
 
   const hostName = story.getHostName();
+  const showStar = Boolean(currentUser)
   return $(`
       <li id="${story.storyId}">
+        ${showStar ? favoriteHTML(story, currentUser) : ""}
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
         </a>
@@ -90,28 +92,44 @@ function putUserStoriesOnPage() {
 }
 
 /**Favorites ****************/
+function favoriteHTML(story, user) {
+  const isFavorite = user.isFavorite(story);
+  const starType = isFavorite ? "fas" : "far";
+  return `
+      <span class="star">
+        <i class="${starType} fa-star"></i>
+      </span>`;
+}
 
 
-$storiesList.on('click', '.star', handleFavoriteStories)
-function handleFavoriteStories(evt) {
+
+async function handleFavoriteStories(evt) {
   const $evt = $(evt.target)
 
   const $clostestLi = $evt.closest('li') // get closest listed <li> to click
   const storyId = $clostestLi.attr('id') // get storyId
+  const story = storyList.stories.find(arr => arr.storyId === storyId)
 
-
-  //if favorited already -> removeFavorite via handleFavoriteStories
-
-  // else -> addFavorite via handleFavoriteStories
+  //if favorited already -> removeFavorite/toggle <i> clas to far
+  if ($evt.hasClass("fas")) {
+    await currentUser.removeFavoriteStory(story)
+    $evt.closest('i').toggleClass("fas far")
+  }
+  // else -> addFavorite/toggle <i> class to fas
+  else {
+    await currentUser.addFavoriteStory(story)
+    $evt.closest('i').toggleClass("fas far")
+  }
 }
 
 function putFavoritesOnPage() {
   console.debug("putFavoritesOnPage")
+
   $favoriteStoriesList.empty()
 
   // loop thru favorites to make $story into HTML using generateStoryMarkup() - adds <li>
   if (currentUser.favorites.length === 0) {
-    $favoriteStoriesList.append('<h5>No favorites added!</h5>')
+    $favoriteStoriesList.append("<h5>No favorites added!</h5>")
   }
   else {
     for (let story of currentUser.favorites) {
@@ -123,3 +141,4 @@ function putFavoritesOnPage() {
   $favoriteStoriesList.show()
 }
 
+$storiesList.on('click', ".star", handleFavoriteStories)
